@@ -1,3 +1,5 @@
+import { Errors } from "./response-middleware"
+
 enum NodeType {
   FILE = "FILE",
   FOLDER = "FOLDER",
@@ -19,10 +21,6 @@ export const rootFolder: Node = Object.freeze({
   parentId: null,
 })
 
-enum Errors {
-  NOT_FOUND= "NOT_FOUND"
-}
-
 export function storeNewNode(name: string, type: NodeType, parentId: number) {
   const suitableName = getSuitableName(name, type, parentId)
   const newlyCreatedNode = {
@@ -37,7 +35,7 @@ export function storeNewNode(name: string, type: NodeType, parentId: number) {
   return newlyCreatedNode
 }
 
-function deleteNodes(ids: number[]) {
+export function deleteNodes(ids: number[]) {
   const buffer = [...ids]
 
   while (buffer.length > 0) {
@@ -94,7 +92,7 @@ function getSuitableName(newName: string, nodeType: NodeType, parentId: ID) {
   return `${newName}${suffix ? ` (${suffix})` : ""}`
 }
 
-export function findNodeFromPath(path: string): { node: Node; breadcrumb: Node[] } | null {
+export function findNodeFromPath(path: string): { node: Node; breadcrumb: Node[] } | Errors {
   if (path === "/") {
     return {
       breadcrumb: [rootFolder],
@@ -102,15 +100,12 @@ export function findNodeFromPath(path: string): { node: Node; breadcrumb: Node[]
     }
   }
 
-  const breadcrumb = path
-    .substr(1)
-    .split("/")
-    .map((folder) => {
-      return dbTable.find((node) => node.name === decodeURIComponent(folder))
-    })
+  const breadcrumb = path.split("/").map((folder) => {
+    return dbTable.find((node) => node.name === decodeURIComponent(folder))
+  })
 
   if (!breadcrumb.every((crumb) => crumb != null)) {
-    return null
+    return Errors.NOT_FOUND
   }
 
   // <Node[]> is necessary otherwise typescript thinks breadcrumb has undefined values inside
@@ -128,7 +123,7 @@ export function findNodeChildren(id: ID) {
   return dbTable.filter((n) => n.parentId === id)
 }
 
-export function getNodeAndChildren(id: ID){
+export function getNodeAndChildren(id: ID) {
   if (id === rootFolder.id) {
     return {
       node: rootFolder,
@@ -161,4 +156,5 @@ export const dbTable: Node[] = [
   { id: 10, name: "How is it going.mp3", type: NodeType.FILE, parentId: null },
   { id: 11, name: "desktop.ini", type: NodeType.FILE, parentId: null },
   { id: 12, name: "random.atirecht", type: NodeType.FILE, parentId: null },
+  { id: 13, name: "V1", type: NodeType.FOLDER, parentId: 5 },
 ]
