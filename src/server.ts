@@ -1,6 +1,6 @@
 import Koa from "koa"
 import Router from "@koa/router"
-import { findNodeFromPath, getNodeAndChildren } from "./queries"
+import { deleteNodes, findNodeFromPath, getNodeAndChildren, storeNewNode } from "./queries"
 import { errorMiddleware } from "./response-middleware"
 
 const HTTP_PORT = 8000
@@ -14,6 +14,16 @@ router.get("/root-nodes", (ctx) => {
 
 router.get("/nodes/:id", (ctx) => {
   ctx.body = getNodeAndChildren(Number(ctx.params.id))
+})
+
+router.post("/nodes", (ctx) => {
+  const body = ctx.request.query
+  ctx.body = storeNewNode(body.name, body.type, Number(body.parent))
+})
+
+router.del("/nodes/:ids", (ctx) => {
+  const ids = ctx.params.ids.split("-").map(Number)
+  ctx.body = deleteNodes(ids)
 })
 
 router.get("/nodes-from-path/:path(.*)", (ctx) => {

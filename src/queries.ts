@@ -58,6 +58,7 @@ export function deleteNodes(ids: number[]) {
     const stateNodeIndex = dbTable.findIndex((node) => node.id === head)
     dbTable.splice(stateNodeIndex, 1)
   }
+  return dbTable
 }
 
 function getSuitableName(newName: string, nodeType: NodeType, parentId: ID) {
@@ -141,7 +142,7 @@ export function getNodeAndChildren(id: ID) {
   }
 }
 
-let nextId = 13
+let nextId = 14
 
 export const dbTable: Node[] = [
   { id: 1, name: "Videos", type: NodeType.FOLDER, parentId: null },
