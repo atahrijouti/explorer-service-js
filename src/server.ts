@@ -24,7 +24,6 @@ router.post("/nodes", (ctx) => {
 
 router.del("/nodes", (ctx) => {
   deleteNodes(ctx.request.body.ids)
-  ctx.body = "Deleted"
   ctx.status = 204;
 })
 
