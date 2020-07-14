@@ -19,7 +19,7 @@ router.get("/nodes/:id", (ctx) => {
 
 router.post("/nodes", (ctx) => {
   const body = ctx.request.body
-  ctx.body = storeNewNode(body.name, body.type, Number(body.parent))
+  ctx.body = storeNewNode(body.name, body.type, body.parentId)
 })
 
 router.del("/nodes", (ctx) => {
