@@ -23,7 +23,9 @@ router.post("/nodes", (ctx) => {
 
 router.del("/nodes/:ids", (ctx) => {
   const ids = ctx.params.ids.split("-").map(Number)
-  ctx.body = deleteNodes(ids)
+  deleteNodes(ids)
+  ctx.body = "Deleted"
+  ctx.status = 204;
 })
 
 router.get("/nodes-from-path/:path(.*)", (ctx) => {

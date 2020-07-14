@@ -58,7 +58,6 @@ export function deleteNodes(ids: number[]) {
     const stateNodeIndex = dbTable.findIndex((node) => node.id === head)
     dbTable.splice(stateNodeIndex, 1)
   }
-  return dbTable
 }
 
 function getSuitableName(newName: string, nodeType: NodeType, parentId: ID) {
