@@ -1,5 +1,6 @@
 import Koa from "koa"
 import Router from "@koa/router"
+import bodyParser from "koa-bodyparser"
 import { deleteNodes, findNodeFromPath, getNodeAndChildren, storeNewNode } from "./queries"
 import { errorMiddleware } from "./response-middleware"
 
@@ -17,7 +18,7 @@ router.get("/nodes/:id", (ctx) => {
 })
 
 router.post("/nodes", (ctx) => {
-  const body = ctx.request.query
+  const body = ctx.request.body
   ctx.body = storeNewNode(body.name, body.type, Number(body.parent))
 })
 
@@ -33,6 +34,7 @@ router.get("/nodes-from-path/:path(.*)", (ctx) => {
 })
 
 app.use(errorMiddleware)
+app.use(bodyParser());
 app.use(router.routes()).use(router.allowedMethods())
 app.listen(HTTP_PORT)
 
