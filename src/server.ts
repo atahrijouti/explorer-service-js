@@ -22,9 +22,8 @@ router.post("/nodes", (ctx) => {
   ctx.body = storeNewNode(body.name, body.type, Number(body.parent))
 })
 
-router.del("/nodes/:ids", (ctx) => {
-  const ids = ctx.params.ids.split("-").map(Number)
-  deleteNodes(ids)
+router.del("/nodes", (ctx) => {
+  deleteNodes(ctx.request.body.ids)
   ctx.body = "Deleted"
   ctx.status = 204;
 })
