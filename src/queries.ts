@@ -141,7 +141,7 @@ export function getNodeAndChildren(id: ID) {
   }
 }
 
-let nextId = 13
+let nextId = 14
 
 export const dbTable: Node[] = [
   { id: 1, name: "Videos", type: NodeType.FOLDER, parentId: null },
