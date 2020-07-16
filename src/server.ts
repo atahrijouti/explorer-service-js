@@ -1,6 +1,8 @@
 import Koa from "koa"
 import Router from "@koa/router"
+import cors from "@koa/cors"
 import bodyParser from "koa-bodyparser"
+
 import { deleteNodes, findNodeFromPath, getNodeAndChildren, storeNewNode } from "./queries"
 import { errorMiddleware } from "./response-middleware"
 
@@ -24,7 +26,7 @@ router.post("/nodes", (ctx) => {
 
 router.del("/nodes", (ctx) => {
   deleteNodes(ctx.request.body.ids)
-  ctx.status = 204;
+  ctx.status = 204
 })
 
 router.get("/nodes-from-path/:path(.*)", (ctx) => {
@@ -32,7 +34,8 @@ router.get("/nodes-from-path/:path(.*)", (ctx) => {
 })
 
 app.use(errorMiddleware)
-app.use(bodyParser());
+app.use(cors())
+app.use(bodyParser())
 app.use(router.routes()).use(router.allowedMethods())
 app.listen(HTTP_PORT)
 
