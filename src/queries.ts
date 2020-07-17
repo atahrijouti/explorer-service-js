@@ -1,4 +1,15 @@
 import { Errors } from "./response-middleware"
+import { Client } from "pg"
+
+const client = new Client({
+  user: "postgres",
+  host: "localhost",
+  database: "explorer",
+  password: "admin",
+  port: 5432,
+})
+
+client.connect()
 
 enum NodeType {
   FILE = "FILE",
@@ -116,14 +127,23 @@ export function findNodeFromPath(path: string): { node: Node; breadcrumb: Node[]
 }
 
 export function findNodeById(id: ID) {
-  return dbTable.find((n) => n.id === id)
+  const query = {
+    name: "fetch-node",
+    text: "SELECT * FROM nodes WHERE id = $1",
+    values: [id],
+  }
+
+  return client
+    .query(query)
+    .then((res) => res.rows[0])
+    .catch((e) => console.error(e.stack))
 }
 
 export function findNodeChildren(id: ID) {
   return dbTable.filter((n) => n.parentId === id)
 }
 
-export function getNodeAndChildren(id: ID) {
+export async function getNodeAndChildren(id: ID) {
   if (id === rootFolder.id) {
     return {
       node: rootFolder,
@@ -131,7 +151,7 @@ export function getNodeAndChildren(id: ID) {
     }
   }
   //
-  const node = findNodeById(id)
+  const node = await findNodeById(id)
   if (node == null) {
     return Errors.NOT_FOUND
   }
