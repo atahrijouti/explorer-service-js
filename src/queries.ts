@@ -1,4 +1,5 @@
 import { Errors } from "./response-middleware"
+import { db } from "./database/db"
 
 enum NodeType {
   FILE = "FILE",
@@ -116,14 +117,19 @@ export function findNodeFromPath(path: string): { node: Node; breadcrumb: Node[]
 }
 
 export function findNodeById(id: ID) {
-  return dbTable.find((n) => n.id === id)
+  return db
+    .query({
+      text: "SELECT * FROM nodes WHERE id = $1",
+      values: [id],
+    })
+    .then((res) => res.rows[0])
 }
 
 export function findNodeChildren(id: ID) {
   return dbTable.filter((n) => n.parentId === id)
 }
 
-export function getNodeAndChildren(id: ID) {
+export async function getNodeAndChildren(id: ID) {
   if (id === rootFolder.id) {
     return {
       node: rootFolder,
@@ -131,7 +137,7 @@ export function getNodeAndChildren(id: ID) {
     }
   }
   //
-  const node = findNodeById(id)
+  const node = await findNodeById(id)
   if (node == null) {
     return Errors.NOT_FOUND
   }

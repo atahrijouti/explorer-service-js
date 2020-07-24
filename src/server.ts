@@ -11,12 +11,12 @@ const HTTP_PORT = 8000
 const app = new Koa()
 const router = new Router()
 
-router.get("/root-nodes", (ctx) => {
-  ctx.body = getNodeAndChildren(null)
+router.get("/root-nodes", async (ctx) => {
+  ctx.body = await getNodeAndChildren(null)
 })
 
-router.get("/nodes/:id", (ctx) => {
-  ctx.body = getNodeAndChildren(Number(ctx.params.id))
+router.get("/nodes/:id", async (ctx) => {
+  ctx.body = await getNodeAndChildren(Number(ctx.params.id))
 })
 
 router.post("/nodes", (ctx) => {
