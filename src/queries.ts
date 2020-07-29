@@ -125,15 +125,28 @@ export function findNodeById(id: ID) {
     .then((res) => res.rows[0])
 }
 
-export function findNodeChildren(id: ID) {
-  return dbTable.filter((n) => n.parentId === id)
+async function findNodeChildren(id: ID) {
+  return db
+    .query({
+      text: `SELECT * FROM nodes WHERE parent_id = $1`,
+      values: [id],
+    })
+    .then((res) => res.rows)
+}
+
+async function findRootChildren() {
+  return db
+    .query({
+      text: `SELECT * FROM nodes WHERE parent_id IS NULL`,
+    })
+    .then((res) => res.rows)
 }
 
 export async function getNodeAndChildren(id: ID) {
   if (id === rootFolder.id) {
     return {
       node: rootFolder,
-      children: findNodeChildren(rootFolder.id),
+      children: await findRootChildren(),
     }
   }
   //
@@ -143,7 +156,7 @@ export async function getNodeAndChildren(id: ID) {
   }
   return {
     node,
-    children: findNodeChildren(id),
+    children: await findNodeChildren(id),
   }
 }
 
