@@ -142,6 +142,13 @@ export async function getNodeAndChildren(id: ID) {
   }
 }
 
+export async function renameNode(id: ID, name: string) {
+  return db.query({
+    text: "UPDATE nodes SET name = $1 WHERE id = $2",
+    values: [name, id],
+  })
+}
+
 let nextId = 14
 
 export const dbTable: Node[] = [

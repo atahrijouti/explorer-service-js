@@ -1,5 +1,11 @@
 import Router from "@koa/router"
-import { deleteNodes, findNodeFromPath, getNodeAndChildren, storeNewNode } from "../queries"
+import {
+  deleteNodes,
+  findNodeFromPath,
+  getNodeAndChildren,
+  renameNode,
+  storeNewNode,
+} from "../queries"
 
 export const router = new Router()
 
@@ -12,8 +18,14 @@ router.get("/nodes/:id", async (ctx) => {
 })
 
 router.post("/nodes", (ctx) => {
-  const body = ctx.request.body
-  ctx.body = storeNewNode(body.name, body.type, body.parentId)
+  const { name, type, parentId } = ctx.request.body
+  ctx.body = storeNewNode(name, type, parentId)
+})
+
+router.put("/nodes/:id", async (ctx) => {
+  const { name } = ctx.request.body
+  ctx.body = await renameNode(ctx.params.id, name)
+  ctx.status = 204
 })
 
 router.del("/nodes", async (ctx) => {
