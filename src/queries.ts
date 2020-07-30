@@ -36,29 +36,11 @@ export function storeNewNode(name: string, type: NodeType, parentId: number) {
   return newlyCreatedNode
 }
 
-export function deleteNodes(ids: number[]) {
-  const buffer = [...ids]
-
-  while (buffer.length > 0) {
-    // store head
-    const head = buffer[0]
-
-    // find children of the current node
-    const children = dbTable.reduce<number[]>(function (acc, node) {
-      if (node.parentId === head && node.id != null) {
-        acc.push(node.id)
-      }
-      return acc
-    }, [])
-
-    // push children at the end of the array
-    buffer.push(...children)
-
-    // removes head from buffer & from state
-    buffer.shift()
-    const stateNodeIndex = dbTable.findIndex((node) => node.id === head)
-    dbTable.splice(stateNodeIndex, 1)
-  }
+export async function deleteNodes(ids: ID[]) {
+  return db.query({
+    text: `DELETE FROM nodes WHERE id in (${arrayParamAnnotations(ids)})`,
+    values: ids,
+  })
 }
 
 function getSuitableName(newName: string, nodeType: NodeType, parentId: ID) {
@@ -177,3 +159,7 @@ export const dbTable: Node[] = [
   { id: 12, name: "random.atirecht", type: NodeType.FILE, parentId: null },
   { id: 13, name: "V1", type: NodeType.FOLDER, parentId: 5 },
 ]
+
+function arrayParamAnnotations(array: any[]) {
+  return array.map((_, i) => `$${i + 1}`).join(",")
+}

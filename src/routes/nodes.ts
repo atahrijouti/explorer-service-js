@@ -16,8 +16,8 @@ router.post("/nodes", (ctx) => {
   ctx.body = storeNewNode(body.name, body.type, body.parentId)
 })
 
-router.del("/nodes", (ctx) => {
-  deleteNodes(ctx.request.body.ids)
+router.del("/nodes", async (ctx) => {
+  await deleteNodes(ctx.request.body.ids)
   ctx.status = 204
 })
 
