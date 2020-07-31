@@ -33,6 +33,6 @@ router.del("/nodes", async (ctx) => {
   ctx.status = 204
 })
 
-router.get("/nodes-from-path/:path(.*)", (ctx) => {
-  ctx.body = findNodeFromPath(ctx.params.path)
+router.get("/nodes-from-path/:path(.*)", async (ctx) => {
+  ctx.body = await findNodeFromPath(ctx.params.path)
 })
