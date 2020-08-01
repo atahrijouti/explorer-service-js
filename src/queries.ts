@@ -22,18 +22,19 @@ export const rootFolder: Node = Object.freeze({
   parent_id: null,
 })
 
-export async function storeNewNode(name: string, type: NodeType, parent_id: number) {
-  // const suitableName = getSuitableName(name, type, parent_id)
-  // const newlyCreatedNode = {
-  //   id: nextId,
-  //   name: suitableName,
-  //   type,
-  //   parent_id,
-  // }
-  // // dbTable.push(newlyCreatedNode)
-  // nextId++
-  //
-  return await getSuitableName("New Folder", NodeType.FOLDER, parent_id)
+export async function storeNewNode(type: NodeType, parent_id: number) {
+  const newNodeBaseName = type == NodeType.FOLDER ? "New folder" : "New file"
+  const nextCopyName = await getNextCopyName(newNodeBaseName, type, parent_id)
+
+  const result = await db.query({
+    text: `
+    INSERT INTO nodes (name, type, parent_id)
+    VALUES ($1, $2, $3)
+    RETURNING *
+  `,
+    values: [nextCopyName, type, parent_id],
+  })
+  return result.rows[0]
 }
 
 export async function deleteNodes(ids: ID[]) {
@@ -43,12 +44,10 @@ export async function deleteNodes(ids: ID[]) {
   })
 }
 
-async function getSuitableName(name: string, nodeType: NodeType, parent_id: ID) {
+async function getNextCopyName(baseName: string, nodeType: NodeType, parent_id: ID) {
   const parentClause = parent_id == null ? "parent_id is null" : "parent_id = $2"
-  const values: any[] = [`^${name}( \\([0-9]+\\))?$`]
+  const values: any[] = [`^${baseName}( \\([0-9]+\\))?$`]
   parent_id != null && values.push(parent_id)
-
-  console.log({ parentClause, values })
 
   const result = await db.query({
     text: `
@@ -59,7 +58,7 @@ select
                substring(name, '\\(([0-9]+)\\)') as integer
            )
        ),
-       0
+       1
    )
    as copy_number
 from nodes
@@ -72,7 +71,13 @@ limit 1
     values,
   })
 
-  console.log(result.rows[0])
+  const maxCopyNumber = result.rows[0]?.copy_number ?? 0
+
+  if (maxCopyNumber === 0) {
+    return baseName
+  } else {
+    return `${baseName} (${maxCopyNumber + 1})`
+  }
 }
 
 /**
@@ -86,7 +91,7 @@ limit 1
  */
 export async function findNodeFromPath(path: string) {
   const pathParts = path.split("/")
-  const result = db.query({
+  const result = await db.query({
     text: `
       select ${buildFromPathSelectIds(pathParts)}
       from nodes n0
@@ -96,7 +101,7 @@ export async function findNodeFromPath(path: string) {
     values: pathParts,
     rowMode: "array",
   })
-  const breadcrumbIds = (await result).rows[0]
+  const breadcrumbIds = result.rows[0]
 
   const breadcrumb = (
     await db.query({
@@ -188,24 +193,6 @@ export async function renameNode(id: ID, name: string) {
     values: [name, id],
   })
 }
-
-let nextId = 14
-
-export const dbTable: Node[] = [
-  { id: 1, name: "Videos", type: NodeType.FOLDER, parent_id: null },
-  { id: 2, name: "Pictures", type: NodeType.FOLDER, parent_id: null },
-  { id: 3, name: "Documents", type: NodeType.FOLDER, parent_id: null },
-  { id: 4, name: "Music", type: NodeType.FOLDER, parent_id: null },
-  { id: 7, name: "New folder", type: NodeType.FOLDER, parent_id: null },
-  { id: 8, name: "New folder (2)", type: NodeType.FOLDER, parent_id: null },
-  { id: 5, name: "CV", type: NodeType.FOLDER, parent_id: 3 },
-  { id: 6, name: "Amine Tirecht.pdf", type: NodeType.FILE, parent_id: 5 },
-  { id: 9, name: "Hello world.txt", type: NodeType.FILE, parent_id: null },
-  { id: 10, name: "How is it going.mp3", type: NodeType.FILE, parent_id: null },
-  { id: 11, name: "desktop.ini", type: NodeType.FILE, parent_id: null },
-  { id: 12, name: "random.atirecht", type: NodeType.FILE, parent_id: null },
-  { id: 13, name: "V1", type: NodeType.FOLDER, parent_id: 5 },
-]
 
 function arrayParamAnnotations(array: any[]) {
   return array.map((_, i) => `$${i + 1}`).join(",")
