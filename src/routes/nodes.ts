@@ -18,8 +18,8 @@ router.get("/nodes/:id", async (ctx) => {
 })
 
 router.post("/nodes", async (ctx) => {
-  const { name, type, parentId } = ctx.request.body
-  ctx.body = (await storeNewNode(name, type, parentId)) + "1"
+  const { name, type, parent_id } = ctx.request.body
+  ctx.body = (await storeNewNode(name, type, parent_id)) + "1"
 })
 
 router.put("/nodes/:id", async (ctx) => {

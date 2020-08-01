@@ -12,28 +12,28 @@ export type Node = {
   id: ID
   name: string
   type: NodeType
-  parentId: ID
+  parent_id: ID
 }
 
 export const rootFolder: Node = Object.freeze({
   id: null,
   name: "Home",
   type: NodeType.FOLDER,
-  parentId: null,
+  parent_id: null,
 })
 
-export async function storeNewNode(name: string, type: NodeType, parentId: number) {
-  // const suitableName = getSuitableName(name, type, parentId)
+export async function storeNewNode(name: string, type: NodeType, parent_id: number) {
+  // const suitableName = getSuitableName(name, type, parent_id)
   // const newlyCreatedNode = {
   //   id: nextId,
   //   name: suitableName,
   //   type,
-  //   parentId,
+  //   parent_id,
   // }
   // // dbTable.push(newlyCreatedNode)
   // nextId++
   //
-  return await getSuitableName("New Folder", NodeType.FOLDER, parentId)
+  return await getSuitableName("New Folder", NodeType.FOLDER, parent_id)
 }
 
 export async function deleteNodes(ids: ID[]) {
@@ -43,7 +43,13 @@ export async function deleteNodes(ids: ID[]) {
   })
 }
 
-async function getSuitableName(newName: string, nodeType: NodeType, parentId: ID) {
+async function getSuitableName(name: string, nodeType: NodeType, parent_id: ID) {
+  const parentClause = parent_id == null ? "parent_id is null" : "parent_id = $2"
+  const values: any[] = [`^${name}( \\([0-9]+\\))?$`]
+  parent_id != null && values.push(parent_id)
+
+  console.log({ parentClause, values })
+
   const result = await db.query({
     text: `
 select
@@ -57,13 +63,13 @@ select
    )
    as copy_number
 from nodes
-where name ~* '^New folder( \\([0-9]+\\))?$'
-  and parent_id is null
+where name ~* $1
+  and ${parentClause}
 group by name
 order by copy_number desc
 limit 1
 `,
-    values: [],
+    values,
   })
 
   console.log(result.rows[0])
@@ -186,19 +192,19 @@ export async function renameNode(id: ID, name: string) {
 let nextId = 14
 
 export const dbTable: Node[] = [
-  { id: 1, name: "Videos", type: NodeType.FOLDER, parentId: null },
-  { id: 2, name: "Pictures", type: NodeType.FOLDER, parentId: null },
-  { id: 3, name: "Documents", type: NodeType.FOLDER, parentId: null },
-  { id: 4, name: "Music", type: NodeType.FOLDER, parentId: null },
-  { id: 7, name: "New folder", type: NodeType.FOLDER, parentId: null },
-  { id: 8, name: "New folder (2)", type: NodeType.FOLDER, parentId: null },
-  { id: 5, name: "CV", type: NodeType.FOLDER, parentId: 3 },
-  { id: 6, name: "Amine Tirecht.pdf", type: NodeType.FILE, parentId: 5 },
-  { id: 9, name: "Hello world.txt", type: NodeType.FILE, parentId: null },
-  { id: 10, name: "How is it going.mp3", type: NodeType.FILE, parentId: null },
-  { id: 11, name: "desktop.ini", type: NodeType.FILE, parentId: null },
-  { id: 12, name: "random.atirecht", type: NodeType.FILE, parentId: null },
-  { id: 13, name: "V1", type: NodeType.FOLDER, parentId: 5 },
+  { id: 1, name: "Videos", type: NodeType.FOLDER, parent_id: null },
+  { id: 2, name: "Pictures", type: NodeType.FOLDER, parent_id: null },
+  { id: 3, name: "Documents", type: NodeType.FOLDER, parent_id: null },
+  { id: 4, name: "Music", type: NodeType.FOLDER, parent_id: null },
+  { id: 7, name: "New folder", type: NodeType.FOLDER, parent_id: null },
+  { id: 8, name: "New folder (2)", type: NodeType.FOLDER, parent_id: null },
+  { id: 5, name: "CV", type: NodeType.FOLDER, parent_id: 3 },
+  { id: 6, name: "Amine Tirecht.pdf", type: NodeType.FILE, parent_id: 5 },
+  { id: 9, name: "Hello world.txt", type: NodeType.FILE, parent_id: null },
+  { id: 10, name: "How is it going.mp3", type: NodeType.FILE, parent_id: null },
+  { id: 11, name: "desktop.ini", type: NodeType.FILE, parent_id: null },
+  { id: 12, name: "random.atirecht", type: NodeType.FILE, parent_id: null },
+  { id: 13, name: "V1", type: NodeType.FOLDER, parent_id: 5 },
 ]
 
 function arrayParamAnnotations(array: any[]) {
