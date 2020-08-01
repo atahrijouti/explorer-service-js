@@ -22,18 +22,18 @@ export const rootFolder: Node = Object.freeze({
   parentId: null,
 })
 
-export function storeNewNode(name: string, type: NodeType, parentId: number) {
-  const suitableName = getSuitableName(name, type, parentId)
-  const newlyCreatedNode = {
-    id: nextId,
-    name: suitableName,
-    type,
-    parentId,
-  }
-  dbTable.push(newlyCreatedNode)
-  nextId++
-
-  return newlyCreatedNode
+export async function storeNewNode(name: string, type: NodeType, parentId: number) {
+  // const suitableName = getSuitableName(name, type, parentId)
+  // const newlyCreatedNode = {
+  //   id: nextId,
+  //   name: suitableName,
+  //   type,
+  //   parentId,
+  // }
+  // // dbTable.push(newlyCreatedNode)
+  // nextId++
+  //
+  return await getSuitableName("New Folder", NodeType.FOLDER, parentId)
 }
 
 export async function deleteNodes(ids: ID[]) {
@@ -43,36 +43,30 @@ export async function deleteNodes(ids: ID[]) {
   })
 }
 
-function getSuitableName(newName: string, nodeType: NodeType, parentId: ID) {
-  const regex = new RegExp(`^${newName}(?: \\(([0-9]*)\\))?$`)
+async function getSuitableName(newName: string, nodeType: NodeType, parentId: ID) {
+  const result = await db.query({
+    text: `
+select
+   coalesce(
+       max(
+           cast(
+               substring(name, '\\(([0-9]+)\\)') as integer
+           )
+       ),
+       0
+   )
+   as copy_number
+from nodes
+where name ~* '^New folder( \\([0-9]+\\))?$'
+  and parent_id is null
+group by name
+order by copy_number desc
+limit 1
+`,
+    values: [],
+  })
 
-  const suffix = dbTable.reduce<number | null>((max, node) => {
-    const matches = node.name.match(regex)
-
-    // if we find a matching name in the current folder & same type
-    if (node.parentId === parentId && matches !== null && node.type === nodeType) {
-      // if we still haven't found a max then use  "${newName} (2)"
-      if (node.name === newName && max === null) {
-        return 2
-      }
-
-      const nextNumber = Number(matches[1]) + 1
-
-      // if no max but we have a match with a number, use nextNumber
-      if (max === null) {
-        return nextNumber
-      } else {
-        // if nextNumber bigger than max, use nextNumber
-        if (nextNumber > max) {
-          return nextNumber
-        }
-      }
-    }
-
-    return max
-  }, null)
-
-  return `${newName}${suffix ? ` (${suffix})` : ""}`
+  console.log(result.rows[0])
 }
 
 /**

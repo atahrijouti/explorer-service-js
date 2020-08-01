@@ -17,9 +17,9 @@ router.get("/nodes/:id", async (ctx) => {
   ctx.body = await getNodeAndChildren(Number(ctx.params.id))
 })
 
-router.post("/nodes", (ctx) => {
+router.post("/nodes", async (ctx) => {
   const { name, type, parentId } = ctx.request.body
-  ctx.body = storeNewNode(name, type, parentId)
+  ctx.body = (await storeNewNode(name, type, parentId)) + "1"
 })
 
 router.put("/nodes/:id", async (ctx) => {
