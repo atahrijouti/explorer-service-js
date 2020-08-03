@@ -143,7 +143,7 @@ function buildFromPathJoins(pathParts: string[]) {
     .join("\n")
 }
 
-export function findNodeById(id: ID) {
+export function findNodeById(id: ID): Promise<Node> {
   return db
     .query({
       text: "SELECT * FROM nodes WHERE id = $1",
@@ -187,11 +187,36 @@ export async function getNodeAndChildren(id: ID) {
   }
 }
 
-export async function renameNode(id: ID, name: string) {
+export async function renameNode(id: ID, newName: string) {
+  const node = await findNodeById(id)
+  if (node == null) {
+    return Errors.NOT_FOUND
+  }
+
+  const nameExists = await twinNodeExists(newName, node.parent_id)
+  if (nameExists) {
+    return Errors.DUPLICATE_ENTRY
+  }
+
   return db.query({
     text: "UPDATE nodes SET name = $1 WHERE id = $2",
-    values: [name, id],
+    values: [newName, id],
   })
+}
+
+async function twinNodeExists(name: string, parent_id: ID) {
+  const parentClause = parent_id == null ? "parent_id is null" : "parent_id = $2"
+  const values: any[] = [name]
+  if (parent_id != null) {
+    values.push(parent_id)
+  }
+
+  const result = await db.query({
+    text: `SELECT * from nodes where LOWER(name) = LOWER($1) and ${parentClause}`,
+    values,
+  })
+
+  return result.rows.length > 0
 }
 
 function arrayParamAnnotations(array: any[]) {

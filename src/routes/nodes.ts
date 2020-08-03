@@ -24,13 +24,13 @@ router.post("/nodes", async (ctx) => {
 
 router.put("/nodes/:id", async (ctx) => {
   const { name } = ctx.request.body
-  ctx.body = await renameNode(ctx.params.id, name)
   ctx.status = 204
+  ctx.body = await renameNode(ctx.params.id, name)
 })
 
 router.del("/nodes", async (ctx) => {
-  await deleteNodes(ctx.request.body.ids)
   ctx.status = 204
+  await deleteNodes(ctx.request.body.ids)
 })
 
 router.get("/nodes-from-path/:path(.*)", async (ctx) => {
