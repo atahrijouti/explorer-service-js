@@ -197,11 +197,12 @@ export async function renameNode(id: ID, newName: string) {
   if (nameExists) {
     return Errors.DUPLICATE_ENTRY
   }
-
-  return db.query({
-    text: "UPDATE nodes SET name = $1 WHERE id = $2",
+  const result = await db.query({
+    text: "UPDATE nodes SET name = $1 WHERE id = $2 RETURNING *",
     values: [newName, id],
   })
+
+  return result.rows[0]
 }
 
 async function twinNodeExists(name: string, parent_id: ID) {
