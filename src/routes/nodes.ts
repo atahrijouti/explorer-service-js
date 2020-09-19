@@ -24,7 +24,7 @@ router.post("/nodes", async (ctx) => {
 
 router.put("/nodes/:id", async (ctx) => {
   const { name } = ctx.request.body
-  ctx.status = 204
+  ctx.status = 200
   ctx.body = await renameNode(ctx.params.id, name)
 })
 
