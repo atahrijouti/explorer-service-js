@@ -10,10 +10,12 @@ export async function errorMiddleware(ctx: Koa.Context, next: Function) {
   const body = ctx.body
   switch (body) {
     case Errors.NOT_FOUND:
-      ctx.throw(404, "Not Found :-(")
+      ctx.status = 404
+      ctx.body = { error: "Not Found :-(" }
       break
     case Errors.DUPLICATE_ENTRY:
-      ctx.throw(409, "Duplicate Entry ::--((")
+      ctx.status = 409
+      ctx.body = { error: "Duplicate Entry ::--((" }
       break
     default:
   }
