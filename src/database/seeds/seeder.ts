@@ -1,6 +1,6 @@
 import { db } from "../db"
 
-export const query = `
+const query = `
 INSERT INTO nodes (id, name, type, parent_id)
 VALUES (1, 'Videos', 'FOLDER', null),
        (2, 'Pictures', 'FOLDER', null),
@@ -17,9 +17,12 @@ VALUES (1, 'Videos', 'FOLDER', null),
        (13, 'V1', 'FOLDER', 5);
   `
 
+const update_sequence = "ALTER SEQUENCE nodes_id_seq RESTART WITH 14"
+
 //// add default seed stuff
 ;(async function () {
   await db.query(query)
+  await db.query(update_sequence)
   await db.end()
   process.exit(0)
 })()

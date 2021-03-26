@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "license": "CC0-1.0",
   "engines": {
-    "node": ">=12 <13",
-    "yarn": "^1.22.4"
+    "node": ">=14 <15",
+    "yarn": "^1.22.10"
   },
   "scripts": {
     "dev": "tsnd --clear --no-notify src/server.ts",
